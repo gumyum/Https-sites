@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>IXL — Integrated Xuvair Links</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:#050505;
+color:white;
+overflow-x:hidden;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:60px 20px;
+text-align:center;
+}
+
+h1{
+font-size:52px;
+background:linear-gradient(90deg,#00eaff,#8fffff);
+-webkit-background-clip:text;
+color:transparent;
+}
+
+.subtitle{
+opacity:.7;
+margin-bottom:25px;
+}
+
+#search{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:none;
+background:rgba(255,255,255,.06);
+color:white;
+margin-bottom:25px;
+}
+
+.links{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.links a{
+padding:12px;
+border-radius:10px;
+background:rgba(255,255,255,.05);
+text-decoration:none;
+color:white;
+transition:.25s;
+}
+
+.links a:hover{
+background:rgba(255,255,255,.12);
+transform:translateY(-2px);
+box-shadow:0 0 10px #00eaff;
+}
+
+/* redirect overlay */
+
+#redirectOverlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+display:flex;
+align-items:center;
+justify-content:center;
+opacity:0;
+pointer-events:none;
+transition:.35s;
+z-index:999;
+}
+
+#redirectText{
+font-size:48px;
+background:linear-gradient(90deg,#00eaff,#8fffff);
+-webkit-background-clip:text;
+color:transparent;
+animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);opacity:.6}
+50%{transform:scale(1.12);opacity:1}
+100%{transform:scale(1);opacity:.6}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="container">
+
+<h1>IXL</h1>
+<div class="subtitle">Integrated Xuvair Links</div>
+
+<input id="search" placeholder="Search links...">
+
+<div class="links" id="links"></div>
+
+</div>
+
+<div id="redirectOverlay">
+<div id="redirectText">Monty made this</div>
+</div>
+
+<script>
+
+/* =========================
+LINKS
+========================= */
+
+const rawLinks = [
+
+"https://yellow-falling.vercel.app/",
+"https://sage-school.yafers.org/",
+"https://d1r01tsqlv902b.cloudfront.net/index.html",
+"https://amzn-s3-priorty.s3.us-east-2.amazonaws.com/index.html",
+"https://frogiesarcade.com/",
+"https://s3.amazonaws.com/prageru-server/mathematics.html",
+"https://prageru-server.s3.amazonaws.com/mathematics.html",
+"https://ktrio839.wixsite.com/massive",
+"https://thanksgiving.amarilloexpress.com/",
+"https://campus.chamilo.org/courses/DSFFSFS/index.php",
+"https://doyourhomework.dream.org.il/",
+"https://sage-ow92ihep8928nd.taxihanoieco.com/",
+"http://breadiscool.groups.id/",
+"https://illinois.smileinndentalclinic.com.np/",
+"http://brostooop.lostgumball.com/",
+"https://gn-math.github.io/",
+"https://sage-loves-area-51.thisisnothing.pw/",
+"https://putting-my-homework-in-my.wspaperbag.com/",
+"https://zxhpblwval.smyasociados.com.ar/gn",
+"https://imalwaysad.github.io/sage-site/index.html",
+"https://imalwaysad.github.io/sage-vau1t/",
+"https://script.google.com/macros/s/AKfycbwy1LU88P4uCEy5z_TmaYK3NP_BUudqTarWAhOJG1iChWJrMuoH5T-t8Bm5eJQZMb0q5g/exec",
+"https://beg-bread-to-let-me-ping-links-ping.stuns.org/",
+"https://hello-kittys.g1en.com/",
+"https://2023.skibiditoi.lat/",
+"https://superr.bowling.vn/",
+"https://hollow-knight.bowling.vn/",
+"https://sage-loves-silksong.krea4u.cl/",
+"http://sage-n3k0.krea4u.cl/",
+"https://trinitypreschoolmp.org/",
+"https://vallejocharterschool.org/",
+"https://ixl.works/",
+"https://ixl.rocks/",
+"https://goguardian-is.verymad.net/",
+"https://spells.myaddr.io/",
+"https://spells.myaddr.dev/",
+"https://spells.myaddr.tools/",
+"https://allyisgoingbacktomexi.co/",
+"https://frogiesarcade.xyz/",
+"https://sports.coaching2lead.com/",
+"https://frogiesarcade.dev/",
+"https://frogiesarcade.win/",
+"https://students.artsineducation.net/",
+"https://webmail.thechapmanschools.org/",
+"https://anything.aaimsedu.in/",
+"https://caisseforsmithfieldschools.org/",
+"https://cliffschools.org/",
+"https://northfayetteschools.org/",
+"https://columbiapublicschools.org/",
+"https://v4.mathsjunction.in.cdn.cloudflare.net/",
+"https://directory.leeschoolsk12.org/",
+"http://haqezcjtay.reprap.pt/",
+"https://ywdynjhrue.jobvn.com/",
+"https://powerschool.nsd160.org/",
+"https://classlink.mansfieldtownshipschooldistrict.org/",
+"https://powerschool.mansfieldtownshipschooldistrict.org/",
+"https://crazycattle3d.lol/",
+"https://rmin.me/",
+"https://powerschool.riversideacademy.site/",
+"https://classlink.riversideacademy.site/",
+"https://152-53-90-17.ip.addr.tools/",
+"https://152-53-81-196.ip.addr.tools/",
+"https://i-need.help/",
+"https://v4.mathsjunction.in/",
+"https://152-53-81-196.plesk.page/",
+"https://frogieeis.gay/",
+"https://f.marshfleldschools.org/",
+"https://frogieesarcadestatic.firebaseapp.com/",
+"https://play.frogiee1.org/",
+"https://larp.now/",
+"https://frog.oofer.lat/",
+"https://colute.net/",
+"https://chesstube.eu.com/",
+"https://unblockedmathgames.com/",
+"https://mathgames.de.com/",
+"https://mathcord.de.com/",
+"https://itsmart.info/",
+"https://betterlives.info/",
+"https://wishlink.net/",
+"https://givingisgold.org/",
+"https://guilinhotels.org/",
+"https://troop617.org/",
+"https://hoysalud.net/",
+"https://jman1593.github.io/",
+"https://mathcordxp.github.io/",
+"https://gametreexp.github.io/",
+"https://login.quiz-me.org/",
+"https://larp.foundation/",
+"https://smdpschool.org/",
+"https://oldmillschool.org/",
+"https://icarus.tk/",
+"https://play.sealiesarcade.win/",
+"https://sealiesarcade.win/"
+
+];
+
+/* remove duplicates */
+
+const links = [...new Set(rawLinks)];
+
+const linksDiv = document.getElementById("links");
+const overlay = document.getElementById("redirectOverlay");
+
+/* render */
+
+function render(){
+linksDiv.innerHTML="";
+
+links.forEach(url=>{
+
+const a=document.createElement("a");
+a.href="#";
+a.textContent=url;
+
+a.onclick=(e)=>{
+
+e.preventDefault();
+
+overlay.style.opacity=1;
+overlay.style.pointerEvents="all";
+
+setTimeout(()=>{
+window.open(url,"_blank");
+overlay.style.opacity=0;
+overlay.style.pointerEvents="none";
+},1200);
+
+};
+
+linksDiv.appendChild(a);
+
+});
+
+}
+
+render();
+
+/* search */
+
+document.getElementById("search").oninput=function(){
+
+const v=this.value.toLowerCase();
+
+document.querySelectorAll(".links a").forEach(a=>{
+a.style.display=a.textContent.toLowerCase().includes(v)?"block":"none";
+});
+
+};
+
+/* =========================
+INTERACTIVE PARTICLES
+========================= */
+
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let particles=[];
+
+for(let i=0;i<200;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-.5)*1.2,
+vy:(Math.random()-.5)*1.2
+});
+}
+
+let mouse={x:0,y:0};
+
+onmousemove=e=>{
+mouse.x=e.x;
+mouse.y=e.y;
+};
+
+canvas.onclick=()=>{
+
+for(let i=0;i<20;i++){
+particles.push({
+x:mouse.x,
+y:mouse.y,
+vx:(Math.random()-.5)*6,
+vy:(Math.random()-.5)*6
+});
+}
+
+};
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+particles.forEach(p=>{
+
+p.x+=p.vx;
+p.y+=p.vy;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,2,0,Math.PI*2);
+ctx.fillStyle="white";
+ctx.fill();
+
+/* connections */
+
+particles.forEach(q=>{
+
+const d=Math.hypot(p.x-q.x,p.y-q.y);
+
+if(d<70){
+
+ctx.beginPath();
+ctx.moveTo(p.x,p.y);
+ctx.lineTo(q.x,q.y);
+ctx.strokeStyle="rgba(0,255,255,"+(1-d/70)+")";
+ctx.stroke();
+
+}
+
+});
+
+});
+
+requestAnimationFrame(draw);
+
+}
+
+draw();
+
+</script>
+
+</body>
+</html>
